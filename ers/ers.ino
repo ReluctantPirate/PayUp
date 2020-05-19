@@ -3,31 +3,31 @@
 // **********************************************************************
 // **** TUNABLE CONSTANTS ***********************************************
 // **********************************************************************
-const int masterColorSwitchGapLength = 100; // Dark time in between color switches
-const int masterColorSwitchLengthMin = 600; // 600
-const int masterColorSwitchLengthMax = 1200; // 1200
-const int masterColorSwitchLengthDelta = 100;
+#define masterColorSwitchGapLength      100 // Dark time in between color switches
+#define masterColorSwitchLengthMin      600 
+#define masterColorSwitchLengthMax      1200
+#define masterColorSwitchLengthDelta    100
 
-const int phaseDurations[] = {40, 25, 5, 15, 8};
+const byte phaseDurations[] = {40, 25, 5, 15, 8};
 const int phaseDeltas[] = {-15, 0, 80, 0, -50};
-const int phaseDurations_v0[] = {20, 8, 5, 5, 8};
+const byte phaseDurations_v0[] = {20, 8, 5, 5, 8};
 const int phaseDeltas_v0[] = {-30, 0, 80, 0, -50};
-const int numPhases = sizeof(phaseDeltas) / sizeof(phaseDeltas[0]);
+const int numPhases = 5;//sizeof(phaseDeltas) / sizeof(phaseDeltas[0]);
 
-const int lonePieceActivationMin = 1000;
-const int lonePieceActivationMax = 8000;
-const int masterResultDisplayLength = 4500;
-const int loserResultDisplayLength = 2000;
-const int winnerPendingWaitLength = 2000;
-const int resetStateLength = 300;
-const int masterSetupStateLength = 1500;
-const int masterSetupDontSendGoLength = 250;
-const int pipeDisplayLength = 500;
-const int pipePropagationAnimationLength = 50;
-const int inputDisplayLength = 1000;
-const int randomAloneDeathChance = 5;
-const int goDelay = 45;
-const int PIPE_BRIGHTNESS = 64;
+#define lonePieceActivationMin          1000
+#define lonePieceActivationMax          8000
+#define masterResultDisplayLength       4500
+#define loserResultDisplayLength        2000
+#define winnerPendingWaitLength         2000
+#define resetStateLength                300
+#define masterSetupStateLength          1500
+#define masterSetupDontSendGoLength     250
+#define pipeDisplayLength               500
+#define pipePropagationAnimationLength  50
+#define inputDisplayLength              1000
+#define randomAloneDeathChance          5
+#define goDelay                         45
+#define PIPE_BRIGHTNESS                 64
 
 // Have direction and step size. Every master spin add step_size * direction. If master spin timer is greater
 // or less than bounds then change direction.
@@ -35,9 +35,9 @@ const int PIPE_BRIGHTNESS = 64;
 // **********************************************************************
 // **** GLOBAL VARIABLES ************************************************
 // **********************************************************************
-#define REACTOR_GREEN   makeColorRGB(0,255,25)
-#define REACTOR_PINK    makeColorHSB(212,225,255)
-#define REACTOR_YELLOW  makeColorHSB(40,255,255)
+Color REACTOR_GREEN   = makeColorRGB(0,255,25);
+Color REACTOR_PINK    = makeColorRGB(255, 10, 50); //makeColorHSB(212,225,255)
+Color REACTOR_YELLOW  = makeColorHSB(40,255,255);
 
 const Color playerRankColors[] = {WHITE, REACTOR_PINK, REACTOR_YELLOW, REACTOR_GREEN, MAGENTA};
 // const Color masterColors[] = { RED, GREEN, BLUE , YELLOW, WHITE};
@@ -56,7 +56,7 @@ byte adjacentMasterFace = 6;
 enum playerRankValues {RANK_NONE, RANK_LOSE, RANK_MID, RANK_WIN, RANK_RESET};
 const byte masterColorNum = 3;
 const byte masterValues[] = {1, 3, 6};
-const byte masterValuesNum = sizeof(masterValues) / sizeof(masterValues[0]);
+const byte masterValuesNum = 3;//sizeof(masterValues) / sizeof(masterValues[0]);
 
 // Stores most recent pattern elements. Most recent is on the left.
 byte lastElements[3][2] = { {99,99}, // Color index, number
@@ -143,13 +143,14 @@ void osReset() {
   if (currentPlayerRankCache == currentPlayerRankSignal && signalState == GO) {
     sharedTimer.set(resetStateLength);
   }
-  setColor(MAGENTA);
+  //setColor(MAGENTA);
+  setColor(REACTOR_PINK);
 }
 
 void osDead() {
-  setColor(RED);
-  glitchRender(RED);
-  glitchRender(RED);
+  setColor(REACTOR_PINK);
+  glitchRender(REACTOR_PINK);
+//  glitchRender(REACTOR_PINK);
 }
 
 // *****************************************************************
@@ -239,10 +240,10 @@ void lsIdle() {
     return;
   }
   if (currentPlayerRankCache == RANK_NONE) {
-    setColor(dim(GREEN, 128));
+    setColor(dim(REACTOR_GREEN, 128));
   }
   pipeRender();
-  setColorOnFace(GREEN, random(5));
+  setColorOnFace(REACTOR_GREEN, random(5));
 }
 
 void lsAnim() {
@@ -283,13 +284,13 @@ void asIdle() {
     return;
   }
   setColor(OFF);
-  setColorOnFace(dim(YELLOW, 128), (sharedTimer.getRemaining()/90) % 6);
+  setColorOnFace(dim(REACTOR_YELLOW, 128), (sharedTimer.getRemaining()/90) % 6);
 }
 
 void asActive() {
-  setColor(GREEN);
-  glitchRender(GREEN);
-  glitchRender(GREEN);
+  setColor(REACTOR_GREEN);
+  glitchRender(REACTOR_GREEN);
+//  glitchRender(REACTOR_GREEN);
 }
 
 // *****************************************************************
@@ -382,7 +383,13 @@ void msSetup() {
       }
     }
   }
-  setColor(BLUE);
+  //setColor(BLUE);
+  setColor(REACTOR_YELLOW);
+//  setColorOnFace(REACTOR_GREEN, 2);
+//  setColorOnFace(REACTOR_GREEN, 4);
+//  setColorOnFace(REACTOR_YELLOW, 1);
+//  setColorOnFace(REACTOR_YELLOW, 3);
+//  setColorOnFace(REACTOR_YELLOW, 5);
 }
 
 void msSpinner() {
@@ -628,7 +635,7 @@ void updateSignalPropagation() {
 }
 
 // make color commands propagate regardless of state, reset when signal state is INERT
-bool updatePlayerColor(byte f) {
+void updatePlayerColor(byte f) {
   byte c = getColorState(f);
   if (c > currentPlayerRankSignal && !(overallState == OS_MASTER_STATE && masterState == MS_SETUP_STATE)) {
     currentPlayerRankSignal = c;

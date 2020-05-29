@@ -240,7 +240,7 @@ void lsIdle() {
     return;
   }
   if (currentPlayerRankCache == RANK_NONE) {
-    setColor(dim(REACTOR_GREEN, 128));
+    setColor(dim(WHITE, 128));
   }
   pipeRender();
   setColorOnFace(REACTOR_GREEN, random(5));

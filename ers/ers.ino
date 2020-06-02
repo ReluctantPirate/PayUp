@@ -4,14 +4,14 @@
 // **** TUNABLE CONSTANTS ***********************************************
 // **********************************************************************
 #define masterColorSwitchGapLength      100 // Dark time in between color switches
-#define masterColorSwitchLengthMin      600 
+#define masterColorSwitchLengthMin      600
 #define masterColorSwitchLengthMax      1200
 #define masterColorSwitchLengthDelta    100
 
 const byte phaseDurations[] = {40, 25, 5, 15, 8};
-const int phaseDeltas[] = {-15, 0, 80, 0, -50};
+const int phaseDeltas[] = { -15, 0, 80, 0, -50};
 const byte phaseDurations_v0[] = {20, 8, 5, 5, 8};
-const int phaseDeltas_v0[] = {-30, 0, 80, 0, -50};
+const int phaseDeltas_v0[] = { -30, 0, 80, 0, -50};
 const int numPhases = 5;//sizeof(phaseDeltas) / sizeof(phaseDeltas[0]);
 
 #define lonePieceActivationMin          1000
@@ -35,9 +35,9 @@ const int numPhases = 5;//sizeof(phaseDeltas) / sizeof(phaseDeltas[0]);
 // **********************************************************************
 // **** GLOBAL VARIABLES ************************************************
 // **********************************************************************
-Color REACTOR_GREEN   = makeColorRGB(0,255,25);
+Color REACTOR_GREEN   = makeColorRGB(0, 255, 25);
 Color REACTOR_PINK    = makeColorRGB(255, 10, 50); //makeColorHSB(212,225,255)
-Color REACTOR_YELLOW  = makeColorHSB(40,255,255);
+Color REACTOR_YELLOW  = makeColorHSB(40, 255, 255);
 
 const Color playerRankColors[] = {WHITE, REACTOR_PINK, REACTOR_YELLOW, REACTOR_GREEN, MAGENTA};
 // const Color masterColors[] = { RED, GREEN, BLUE , YELLOW, WHITE};
@@ -59,17 +59,18 @@ const byte masterValues[] = {1, 3, 6};
 const byte masterValuesNum = 3;//sizeof(masterValues) / sizeof(masterValues[0]);
 
 // Stores most recent pattern elements. Most recent is on the left.
-byte lastElements[3][2] = { {99,99}, // Color index, number
-                           {99,99},
-                           {99,99} };
+byte lastElements[3][2] = { {99, 99}, // Color index, number
+  {99, 99},
+  {99, 99}
+};
 
-byte playerRanks[] = {6,6,6,6,6,6};
+byte playerRanks[] = {6, 6, 6, 6, 6, 6};
 byte numPlayersAtInputTime = 0;
 byte masterNextRankToAssign = 0;
 
 byte currentPlayerRankSignal = 0;
 byte currentPlayerRankCache = 0;
-                    
+
 const int lastElementsNum = sizeof(lastElements) / sizeof(lastElements[0]);
 
 byte sendData = 1;
@@ -144,13 +145,13 @@ void osReset() {
     sharedTimer.set(resetStateLength);
   }
   //setColor(MAGENTA);
-  setColor(REACTOR_PINK);
+  setColor(WHITE);
 }
 
 void osDead() {
   setColor(REACTOR_PINK);
   glitchRender(REACTOR_PINK);
-//  glitchRender(REACTOR_PINK);
+  //  glitchRender(REACTOR_PINK);
 }
 
 // *****************************************************************
@@ -284,13 +285,13 @@ void asIdle() {
     return;
   }
   setColor(OFF);
-  setColorOnFace(dim(REACTOR_YELLOW, 128), (sharedTimer.getRemaining()/90) % 6);
+  setColorOnFace(dim(REACTOR_YELLOW, 128), (sharedTimer.getRemaining() / 90) % 6);
 }
 
 void asActive() {
   setColor(REACTOR_GREEN);
   glitchRender(REACTOR_GREEN);
-//  glitchRender(REACTOR_GREEN);
+  //  glitchRender(REACTOR_GREEN);
 }
 
 // *****************************************************************
@@ -301,7 +302,7 @@ void asActive() {
 void osPipe() {
   osPlayer();
   if (overallState != OS_PIPE_STATE) return;
-  switch(pipeState) {
+  switch (pipeState) {
     case PS_IDLE_STATE:
       psIdle();
       break;
@@ -368,14 +369,14 @@ void osMaster() {
 }
 
 void msSetup() {
-  if(sharedTimer.isExpired()) {
+  if (sharedTimer.isExpired()) {
     masterState = MS_SPINNER_STATE;
     currentPlayerRankSignal = RANK_NONE;
     return;
   }
   if (sharedTimer.getRemaining() > masterSetupDontSendGoLength) {
     FOREACH_FACE(f) {
-      if(!isValueReceivedOnFaceExpired(f) && getSignalState(f) != RESOLVE) {
+      if (!isValueReceivedOnFaceExpired(f) && getSignalState(f) != RESOLVE) {
         setValueSentOnFace((RANK_RESET << 3) + (GO << 1) + 1, f);
       }
       else {
@@ -383,61 +384,55 @@ void msSetup() {
       }
     }
   }
-  //setColor(BLUE);
-  setColor(REACTOR_YELLOW);
-//  setColorOnFace(REACTOR_GREEN, 2);
-//  setColorOnFace(REACTOR_GREEN, 4);
-//  setColorOnFace(REACTOR_YELLOW, 1);
-//  setColorOnFace(REACTOR_YELLOW, 3);
-//  setColorOnFace(REACTOR_YELLOW, 5);
+  setColor(REACTOR_PINK);
 }
 
 void msSpinner() {
   currentPlayerRankCache = 0; // Reset rank cache used to track whether to send RANK_RESET
   if (masterColorSwitchTimer.isExpired()) {  // SET NEXT MASTER COLOR
-      masterColorIndex = random(masterColorNum - 1);
-      masterValue = masterValues[random(masterValuesNum - 1)];
-      // Shift all stored combos in lastElements to the right. TODO put this in a function ?
-      for(byte i=lastElementsNum-1; i>0; --i)
-      {
-          lastElements[i][0] = lastElements[i-1][0];
-          lastElements[i][1] = lastElements[i-1][1];
-      }
-      lastElements[0][0] = masterColorIndex; // Overwrite first element with newest one
-      lastElements[0][1] = masterValue;
+    masterColorIndex = random(masterColorNum - 1);
+    masterValue = masterValues[random(masterValuesNum - 1)];
+    // Shift all stored combos in lastElements to the right. TODO put this in a function ?
+    for (byte i = lastElementsNum - 1; i > 0; --i)
+    {
+      lastElements[i][0] = lastElements[i - 1][0];
+      lastElements[i][1] = lastElements[i - 1][1];
+    }
+    lastElements[0][0] = masterColorIndex; // Overwrite first element with newest one
+    lastElements[0][1] = masterValue;
 
-      masterColorSwitchTimer.set(masterColorSwitchLength);
+    masterColorSwitchTimer.set(masterColorSwitchLength);
 
-      if (phaseStepsTaken >= phaseDurations[phaseIndex]) {
-          // After the first run through the phases, skip the first initial extra slow stage
-          // Assuming 4 phases
-          // 0 -> 1
-          // 1 -> 2
-          // 2 -> 3
-          // 3 -> 1
-          phaseIndex = (phaseIndex % (numPhases - 1)) + 1;
-          phaseStepsTaken = 0;
-      }
+    if (phaseStepsTaken >= phaseDurations[phaseIndex]) {
+      // After the first run through the phases, skip the first initial extra slow stage
+      // Assuming 4 phases
+      // 0 -> 1
+      // 1 -> 2
+      // 2 -> 3
+      // 3 -> 1
+      phaseIndex = (phaseIndex % (numPhases - 1)) + 1;
+      phaseStepsTaken = 0;
+    }
 
-      // masterColorSwitchLength TODO maybe this variable can be removed
-      masterColorSwitchLength += phaseDeltas[phaseIndex];
-      phaseStepsTaken += 1;
+    // masterColorSwitchLength TODO maybe this variable can be removed
+    masterColorSwitchLength += phaseDeltas[phaseIndex];
+    phaseStepsTaken += 1;
 
-      // masterColorSwitchLength -= masterColorSwitchLengthDelta;
+    // masterColorSwitchLength -= masterColorSwitchLengthDelta;
 
-      // masterColorSwitchLength += masterColorSwitchLengthDelta * masterColorSwitchLengthDirection;
-      // if (masterColorSwitchLength < masterColorSwitchLengthMin || masterColorSwitchLength > masterColorSwitchLengthMax) {
-      //     masterColorSwitchLengthDirection *= -1;
-      // }
+    // masterColorSwitchLength += masterColorSwitchLengthDelta * masterColorSwitchLengthDirection;
+    // if (masterColorSwitchLength < masterColorSwitchLengthMin || masterColorSwitchLength > masterColorSwitchLengthMax) {
+    //     masterColorSwitchLengthDirection *= -1;
+    // }
 
-      if (masterColorSwitchLength < masterColorSwitchLengthMin) masterColorSwitchLength = masterColorSwitchLengthMin;
-      spinnerOffset = random(5);
+    if (masterColorSwitchLength < masterColorSwitchLengthMin) masterColorSwitchLength = masterColorSwitchLengthMin;
+    spinnerOffset = random(5);
   } else if (masterColorSwitchTimer.getRemaining() < masterColorSwitchGapLength) { // Blink off for a bit
-      displayCombo(dim(masterColors[masterColorIndex],
-        masterColorSwitchTimer.getRemaining() * 255 /masterColorSwitchGapLength), masterValue);
-      // displayCombo(masterColors[masterColorIndex], masterValue); // TODO Remove, need dimming on master or repeat combos are 
-      // indistinguishable.
-  } 
+    displayCombo(dim(masterColors[masterColorIndex],
+                     masterColorSwitchTimer.getRemaining() * 255 / masterColorSwitchGapLength), masterValue);
+    // displayCombo(masterColors[masterColorIndex], masterValue); // TODO Remove, need dimming on master or repeat combos are
+    // indistinguishable.
+  }
   else {
     displayCombo(masterColors[masterColorIndex], masterValue);
   }
@@ -446,7 +441,7 @@ void msSpinner() {
     if (!isValueReceivedOnFaceExpired(f)
         && getSignalState(f) == GO) {
       if (getColorState(f) == RANK_NONE) {
-          // Received first player input
+        // Received first player input
 
         // initialize ranking system
         masterNextRankToAssign = 1;
@@ -469,7 +464,7 @@ void msSpinner() {
           masterState = MS_LOSER_STATE;
           sharedTimer.set(loserResultDisplayLength);
         }
-        
+
         // reset pattern memory
 
         break;
@@ -484,7 +479,7 @@ void msSpinner() {
 void updateSpoonsSignals() {
   FOREACH_FACE(f) {
     byte sendVal = (GO << 1) + 1;
-    if(!isValueReceivedOnFaceExpired(f) && getSignalState(f) != RESOLVE) {
+    if (!isValueReceivedOnFaceExpired(f) && getSignalState(f) != RESOLVE) {
       if (playerRanks[f] == 0) {
         sendVal = sendVal + (RANK_WIN << 3);
         setValueSentOnFace(sendVal, f);
@@ -514,8 +509,8 @@ void msSpoons() {
     FOREACH_FACE(f) {
       if (playerRanks[f] == 6) {
         if (isValueReceivedOnFaceExpired(f) || getSignalState(f) == GO) { // Received next player input
-            playerRanks[f] = masterNextRankToAssign++;
-            sharedTimer.set(winnerPendingWaitLength);
+          playerRanks[f] = masterNextRankToAssign++;
+          sharedTimer.set(winnerPendingWaitLength);
         }
         else {
           ++playersRemaining;
@@ -573,35 +568,35 @@ void msLoser() {
 
 
 bool isValidPattern() {
-    // Doubles
-    if ((lastElements[0][0] == lastElements[1][0]) && (lastElements[0][0] != 99)) { // Check color double
-        return true;
-    }
-    if ((lastElements[0][1] == lastElements[1][1]) && (lastElements[0][1] != 99)) { // Check value double
-        return true;
-    }
+  // Doubles
+  if ((lastElements[0][0] == lastElements[1][0]) && (lastElements[0][0] != 99)) { // Check color double
+    return true;
+  }
+  if ((lastElements[0][1] == lastElements[1][1]) && (lastElements[0][1] != 99)) { // Check value double
+    return true;
+  }
 
-    return false;
+  return false;
 }
 
 // Sets the stored pattern to 99 (init val)
 void resetStoredPattern() {
-    for (byte i=0; i<lastElementsNum; ++i) {
-        lastElements[i][0] = 99;
-        lastElements[i][1] = 99;
-    }
+  for (byte i = 0; i < lastElementsNum; ++i) {
+    lastElements[i][0] = 99;
+    lastElements[i][1] = 99;
+  }
 }
 
 void displayCombo(Color color, byte value) {
   setColor(OFF);
   if (value >= 1) {
-      setColorOnFace(color, (0 + spinnerOffset) % 6);
+    setColorOnFace(color, (0 + spinnerOffset) % 6);
   }
   if (value >= 3) {
-      setColorOnFace(color, (2 + spinnerOffset) % 6);
+    setColorOnFace(color, (2 + spinnerOffset) % 6);
   }
   if (value >= 6) {
-      setColorOnFace(color, (4 + spinnerOffset) % 6);
+    setColorOnFace(color, (4 + spinnerOffset) % 6);
   }
 }
 
@@ -616,13 +611,13 @@ void updateSignalPropagation() {
       break;
     case GO:
       if (runGoBroadcastTimer) { // Make sure timer runs only once
-          goBroadcast.set(goBroadcastLength);
+        goBroadcast.set(goBroadcastLength);
       }
       if (!goBroadcast.isExpired()) {
-          // Keep broadcasing GO for a time
-          runGoBroadcastTimer = false;
+        // Keep broadcasing GO for a time
+        runGoBroadcastTimer = false;
       } else {
-          goLoop();
+        goLoop();
       }
       break;
     case RESOLVE:
@@ -648,9 +643,9 @@ bool shouldConsiderFace(byte f) { //if adjacent to master, should I prop signals
   if (adjacentMasterFace == 6) return true;
 
   if (f == adjacentMasterFace
-   || f == (adjacentMasterFace + 2) % 6
-   || f == (adjacentMasterFace + 3) % 6
-   || f == (adjacentMasterFace + 4) % 6) {
+      || f == (adjacentMasterFace + 2) % 6
+      || f == (adjacentMasterFace + 3) % 6
+      || f == (adjacentMasterFace + 4) % 6) {
     return true;
   }
   return false;
@@ -676,7 +671,7 @@ void inertLoop() {
 // Confusing but saves 18 bytes
 void goResolveLoopOptimization(byte a) {
   signalState = a; //I default to this at the start of the loop. Only if I see a problem does this not happen
-  
+
   //look for neighbors who have not heard the GO news
   FOREACH_FACE(f) {
     if (shouldConsiderFace(f)) {//a neighbor!
